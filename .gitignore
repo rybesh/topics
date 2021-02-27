@@ -1,0 +1,14 @@
+.DS_Store
+*-topics
+*-topics.html
+diagnostics/
+info/
+mallet/
+models/
+pdf/
+topdocs/
+txt.sequence
+txt/
+venv/
+viz/
+wordcounts.numbers
