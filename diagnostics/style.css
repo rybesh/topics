@@ -1,0 +1,42 @@
+body {
+    font-family: Calibri, Open Sans;
+    font-size: medium;
+}
+.topic {
+    cursor: default;
+    margin: 30px;
+}
+.scrolltable {
+    height : 725px;
+    overflow-y: auto;
+}
+.anchor { color: #5c993d; }
+.random { color: #5b3d99; }
+tr:nth-child(even) {
+  background-color: #eee;
+}
+td {
+    cursor: default;
+    font-size: small;
+}
+td:hover { background-color: #ddd; }
+svg { float: left; }
+text:hover { fill: blue; }
+.rule { stroke: #ccc; }
+.nearest {
+    opacity: 0.5;
+    stroke: #000;
+    stroke-width: 5;
+}
+.sampled {
+    opacity: 0.5;
+    stroke: #44a;
+    stroke-width: 5;
+}
+.label { fill: #ccc; }
+.axis text { font-size: x-small; }
+.axis path {
+    fill: none;
+    stroke: black;
+}
+.axis line { stroke: black; }

@@ -1,7 +1,7 @@
 .DS_Store
 *-topics
 *-topics.html
-diagnostics/
+diagnostics/*-topics/
 info/
 mallet/
 models/

@@ -179,16 +179,21 @@ unarchive: $(MS)/info.tar
 	tar -C $(SCRATCH) -xvf $<
 
 clean:
-	rm -f txt/dumped wordcounts.csv txt.sequence *-topics.html
+	rm -rf \
+	wordcounts.csv \
+	*-topics.html \
+	*-topics \
+	topdocs \
+	diagnostics/*-topics
 
 confirm:
 	@/bin/echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 
 superclean: confirm clean
-	rm -rf txt mallet venv
+	rm -rf txt txt.sequence mallet venv
 
 superduperclean: superclean
-	rm -rf models viz topdocs diagnostics
+	rm -rf models viz
 
 .PHONY: \
 serve \
@@ -211,7 +216,7 @@ $(SCRATCH)/info/%-topics/doc-topics.tsv \
 $(SCRATCH)/info/%-topics/doc-topics.json \
 $(SCRATCH)/info/%-topics/topic-docs.txt \
 $(SCRATCH)/info/%-topics/diagnostics.xml \
-%-topics \
+%-topics.html \
 viz/%-topics/index.html \
 topdocs/%-topics/index.html \
 diagnostics/%-topics/index.html

@@ -3,6 +3,7 @@
 import sys
 import os
 import json
+from urllib.parse import unquote
 
 n_topics = int(sys.argv[1])
 
@@ -40,7 +41,7 @@ def header(title='top documents per topic'):
 
 
 def link(f):
-    path = (
+    path = unquote(
         f.split('/')[-1]
         .replace('__', '/')
         .replace('_', ' ')
