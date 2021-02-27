@@ -151,7 +151,7 @@ $(SCRATCH)/info/%-topics/doc-topics.json \
 | $(PYTHON)
 	$(PYTHON) topdocs.py $* $^
 
-%-topics: $(SCRATCH)/info/%-topics/doc-topics.json | $(PYTHON)
+%-topics: $(SCRATCH)/info/%-topics/doc-topics.json %-topics.html | $(PYTHON)
 	echo '#! /bin/sh' > $@
 	echo './topics.py info/$*-topics/doc-topics.json "$$1"' >> $@
 	chmod +x $@
@@ -160,7 +160,6 @@ $(SCRATCH)/info/%-topics/doc-topics.json \
 viz/%-topics/index.html \
 topdocs/%-topics/index.html \
 diagnostics/%-topics/index.html \
-%-topics \
 FORCE
 	echo '<!doctype html>' > $@
 	echo '<meta charset=utf-8>' >> $@
