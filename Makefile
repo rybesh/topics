@@ -159,8 +159,7 @@ $(SCRATCH)/info/%-topics/doc-topics.json \
 %-topics.html: \
 viz/%-topics/index.html \
 topdocs/%-topics/index.html \
-diagnostics/%-topics/index.html \
-FORCE
+diagnostics/%-topics/index.html
 	echo '<!doctype html>' > $@
 	echo '<meta charset=utf-8>' >> $@
 	echo '<title>$* topics</title>' >> $@
@@ -190,8 +189,6 @@ superclean: confirm clean
 
 superduperclean: superclean
 	rm -rf models viz topdocs diagnostics
-
-FORCE:
 
 .PHONY: \
 serve \
