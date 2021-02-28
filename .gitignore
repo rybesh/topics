@@ -1,6 +1,8 @@
 .DS_Store
 *-topics
+topics
 *-topics.html
+index.html
 diagnostics/*-topics/
 info/
 mallet/
@@ -11,4 +13,4 @@ txt.sequence
 txt/
 venv/
 viz/
-wordcounts.numbers
+wordcounts.*

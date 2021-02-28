@@ -40,3 +40,4 @@ text:hover { fill: blue; }
     stroke: black;
 }
 .axis line { stroke: black; }
+a { text-decoration: none; }

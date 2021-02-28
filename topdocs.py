@@ -11,33 +11,47 @@ DOCS = int(5000 / n_topics)
 
 
 def header(title='top documents per topic'):
-    return (
-        '<!doctype html>'
-        '<head>'
-        '<meta charset=utf-8>'
-        f'<title>{title}</title>'
-        '<style>'
-        '.link { padding-left: 1em }'
-        '.nav {'
-        '  display: flex;'
-        '  width: 300px;'
-        '  justify-content: space-between;'
-        '  align-items: center;'
-        '  margin-bottom: 2em;'
-        '}'
-        '.spacer { height: 1000px }'
-        'h2 {'
-        '  display: inline-block;'
-        '  margin: 0;'
-        '  text-align: center;'
-        '}'
-        'a {'
-        '  text-decoration: none;'
-        '  padding: 0 0.25em;'
-        '}'
-        '</style>'
-        f'<body><h1>top {DOCS} documents per topic</h1>'
-    )
+    return f'''
+    <!doctype html>
+    <head>
+    <meta charset=utf-8>
+    <title>{title}</title>
+    <style>
+    .link {{
+      display: inline-block;
+      padding-left: 1em;
+    }}
+    .pt {{ padding-top: 1em }}
+    .mb {{ margin-bottom: 1em }}
+    .nav {{
+      display: flex;
+      width: 300px;
+      justify-content: space-between;
+      align-items: center;
+    }}
+    .spacer {{ height: 1000px }}
+    .hidden {{ visibility: hidden }}
+    .words {{
+      list-style: none;
+      padding: 0;
+    }}
+    .words li {{ display: inline }}
+    .words li::after {{ content: ", " }}
+    .words li:last-child::after {{ content: "" }}
+    h3 {{
+      display: inline-block;
+      margin: 0;
+      text-align: center;
+    }}
+    a {{ text-decoration: none; }}
+    </style>
+    <body>
+    <div>
+    <a href="/{n_topics}-topics.html">topic visualization and diagnostics</a>
+    </div>
+    <h1><a href="./">{n_topics} topics</a></h1>
+    <h2>top {DOCS} documents per topic</h2>
+    '''
 
 
 def link(f):
@@ -59,12 +73,20 @@ os.makedirs(f'topdocs/{n_topics}-topics', exist_ok=True)
 
 with open(f'topdocs/{n_topics}-topics/index.html', 'w') as index:
     index.write(header())
-    index.write('topics: ')
+    index.write('topics:<div style="max-width: 600px">')
     for topic_num in range(1, n_topics + 1):
-        index.write(f'<a href="{topic_num}.html">{topic_num}</a>\n')
+        index.write((
+            '<span class="link pt">'
+            f'<a href="{topic_num}.html">{topic_num}</a>'
+            '</span>\n'
+        ))
+    index.write('</div>')
 
 with open(sys.argv[3]) as f:
     doc_topics = json.load(f)
+
+with open(sys.argv[4]) as f:
+    topic_words = json.load(f)
 
 with open(sys.argv[2]) as f:
     next(f)
@@ -83,23 +105,35 @@ with open(sys.argv[2]) as f:
                 page.close()
             page = open(f'topdocs/{n_topics}-topics/{topic_num}.html', 'w')
             page.write(header(f'topic {topic_num}'))
-            page.write('<div class="nav">')
+            page.write('<div class="nav mb">')
             if topic_num > 1:
                 page.write(
                     f'<a href="{topic_num - 1}.html">'
                     f'&lt; topic {topic_num - 1}</a>'
                 )
             else:
-                page.write('<span></span>')
-            page.write(f'<h2 id="{topic_num}">topic {topic_num}</h2>')
+                page.write('<span class="hidden">&lt; topic x</span>')
+            page.write(f'<h3 id="{topic_num}">topic {topic_num}</h3>')
             if topic_num < n_topics:
                 page.write(
                     f'<a href="{topic_num + 1}.html">'
                     f'topic {topic_num + 1} &gt;</a>'
                 )
             else:
-                page.write('<span></span>')
+                page.write('<span class="hidden">topic x &gt;</span>')
             page.write('</div>')
+            words = ''.join(
+                [f'<li>{w}</li>' for w in topic_words[str(topic_num)]]
+            )
+            page.write(f'<ol class="words mb">{words}</ol>')
+            viz = f'/viz/{n_topics}-topics/#topic={topic_num}&lambda=1&term='
+            page.write((
+                '<div class="mb">'
+                f'<a target="_blank" href="{viz}">'
+                'open topic in visualization'
+                '</a>'
+                '</div>'
+            ))
             last_topic_num = topic_num
             n_docs = 1
         if n_docs > DOCS:
@@ -110,7 +144,9 @@ with open(sys.argv[2]) as f:
             f'<span style="background-color: {red(proportion)}">'
             f'{proportion:.3f}'
             '</span>'
-            f'<span class="link"><a href="{href}">{anchor}</a></span>'
+            f'<span class="link">'
+            f'<a href="{href}">{anchor.replace("/", " / ")}</a>'
+            '</span>'
         )
         for p, t in doc_topics.get(filename, []):
             if t == topic_num:

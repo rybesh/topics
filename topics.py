@@ -11,7 +11,11 @@ HOST = '127.0.0.1:5555'
 
 # deal with quirks in mallet's url encoding
 def _quote(s):
-    return quote(s).replace('%2B', '+')
+    return (
+        quote(s)
+        .replace('%2B', '+')
+        .replace('%2C', ',')
+    )
 
 
 with open(sys.argv[1]) as f:

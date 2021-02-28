@@ -1,13 +1,18 @@
-TOOLS = git ant python3
-MALLET = ./mallet/bin/mallet
-PYTHON = ./venv/bin/python
+TOOLS := git ant python3 pdftotext
+MALLET := ./mallet/bin/mallet
+PYTHON := ./venv/bin/python
+PIP := ./venv/bin/pip
+
+# where local web server should listen
+HOST ?= 127.0.0.1
+PORT ?= 5555
 
 # machine specs, set in env
 MEMORY ?= 12g
 CPUS ?= $(shell sysctl hw.ncpu | cut -d ' ' -f 2)
 
 # hyperparameter optimization settings
-OPTIMIZATION = --optimize-interval 20 --optimize-burn-in 50 # keep this space
+OPTIMIZATION := --optimize-interval 20 --optimize-burn-in 50 # keep this space
 
 # where to put big intermediate and archived files
 SCRATCH ?= .
@@ -28,6 +33,7 @@ X := $(foreach tool,$(TOOLS),\
 n_topics = $(word 1,$(subst -, ,$1))
 optimize = $(word 2,$(subst -, ,$1))
 
+# dump plaintext from pdfs
 txt/dumped:
 	mkdir -p txt
 	find -L pdf \
@@ -37,6 +43,7 @@ txt/dumped:
 	| xargs -0 -n1 ./dumptext.sh
 	touch txt/dumped
 
+# count words in each file
 wordcounts.csv:
 	echo '"word count",file' > $@
 	find txt -name "*.txt" -print0 \
@@ -71,20 +78,20 @@ models/%-topics.gz: txt.sequence
 
 # $(SCRATCH)/info is for possibly very large intermediate data files...
 
-$(SCRATCH)/info:
-	mkdir -p $@
-
-$(SCRATCH)/info/instances.txt: txt.sequence | $(SCRATCH)/info
+$(SCRATCH)/info/instances.txt: txt.sequence
+	mkdir -p $(@D)
 	$(MALLET) info \
 	--input txt.sequence \
 	--print-instances > $@
 
-$(SCRATCH)/info/features.txt: txt.sequence | $(SCRATCH)/info
+$(SCRATCH)/info/features.txt: txt.sequence
+	mkdir -p $(@D)
 	$(MALLET) info \
 	--input txt.sequence \
 	--print-features > $@
 
-$(SCRATCH)/info/feature-counts.tsv: txt.sequence | $(SCRATCH)/info
+$(SCRATCH)/info/feature-counts.tsv: txt.sequence
+	mkdir -p $(@D)
 	$(MALLET) info \
 	--input txt.sequence \
 	--print-feature-counts > $@
@@ -93,7 +100,7 @@ $(SCRATCH)/info/%-topics/topic-word-weights.tsv \
 $(SCRATCH)/info/%-topics/doc-topics.tsv \
 $(SCRATCH)/info/%-topics/topic-docs.txt \
 $(SCRATCH)/info/%-topics/diagnostics.xml &: \
-models/%-topics.gz txt.sequence
+models/%-topics.gz
 	mkdir -p $(SCRATCH)/info/$*-topics
 	$(MALLET) train-topics \
 	--num-threads $(CPUS) \
@@ -108,21 +115,27 @@ models/%-topics.gz txt.sequence
 	--diagnostics-file $(SCRATCH)/info/$*-topics/diagnostics.xml
 
 $(SCRATCH)/info/%-topics/doc-topics.json: \
-$(SCRATCH)/info/%-topics/topic-docs.txt
+$(SCRATCH)/info/%-topics/topic-docs.txt \
+| $(PYTHON)
 	$(PYTHON) doc-topics.py $* $< > $@
+
+$(SCRATCH)/info/%-topics/topic-words.json: \
+$(SCRATCH)/info/%-topics/diagnostics.xml \
+| $(PYTHON)
+	$(PYTHON) topic-words.py $< > $@
 
 # ...end # $(SCRATCH)/info
 
+# archive intermediate files for mass storage
 $(MS)/info.tar:
 	tar -C $(SCRATCH) -cvf $@ info
 
+# install python and visualization libs
 $(PYTHON):
 	python3 -m venv venv
-	./venv/bin/pip install --upgrade pip
-	./venv/bin/pip install \
-	wheel \
-	scikit-learn \
-	git+https://github.com/rybesh/pyLDAvis.git
+	$(PIP) install --upgrade pip
+	$(PIP) install wheel
+	$(PIP) install scikit-learn pyldavis
 
 # generate topics visualization
 viz/%-topics/index.html: \
@@ -131,14 +144,14 @@ $(SCRATCH)/info/features.txt \
 $(SCRATCH)/info/feature-counts.tsv \
 $(SCRATCH)/info/%-topics/topic-word-weights.tsv \
 $(SCRATCH)/info/%-topics/doc-topics.tsv \
-| viz/%-topics $(PYTHON)
-	mkdir -p viz/$*-topics
+| $(PYTHON)
+	mkdir -p $(@D)
 	$(PYTHON) viz.py $(SCRATCH)/info $(SCRATCH)/info/$*-topics > $@
 
 # generate diagnostic visualization
-diagnostics/%-topics/index.html: \
+diagnostics/%-topics/data.xml: \
 $(SCRATCH)/info/%-topics/diagnostics.xml
-	mkdir -p diagnostics/$*-topics
+	mkdir -p $(@D)
 	cp $< diagnostics/$*-topics/data.xml
 	ln -f diagnostics/index.html diagnostics/$*-topics/index.html
 	ln -f diagnostics/style.css diagnostics/$*-topics/style.css
@@ -148,75 +161,76 @@ $(SCRATCH)/info/%-topics/diagnostics.xml
 topdocs/%-topics/index.html: \
 $(SCRATCH)/info/%-topics/topic-docs.txt \
 $(SCRATCH)/info/%-topics/doc-topics.json \
+$(SCRATCH)/info/%-topics/topic-words.json \
 | $(PYTHON)
 	$(PYTHON) topdocs.py $* $^
 
-%-topics: $(SCRATCH)/info/%-topics/doc-topics.json %-topics.html | $(PYTHON)
-	echo '#! /bin/sh' > $@
-	echo './topics.py info/$*-topics/doc-topics.json "$$1"' >> $@
-	chmod +x $@
+# generate scripts for finding documents
+%-topics: \
+$(SCRATCH)/info/%-topics/doc-topics.json \
+%-topics.html \
+| $(PYTHON)
+	./make-scripts.sh $@
 
+# generate html index pages
 %-topics.html: \
-viz/%-topics/index.html \
 topdocs/%-topics/index.html \
-diagnostics/%-topics/index.html
-	echo '<!doctype html>' > $@
-	echo '<meta charset=utf-8>' >> $@
-	echo '<title>$* topics</title>' >> $@
-	echo '<body style="max-width: 800px">' >> $@
-	echo '<ul>' >> $@
-	echo '<li><a href="$(word 1,$(^D))">visualization</a>' >> $@
-	echo '<li><a href="$(word 2,$(^D))">top documents per topic</a>' >> $@
-	echo '<li><a href="$(word 3,$(^D))">diagnostics</a>' >> $@
-	echo '</ul>' >> $@
+viz/%-topics/index.html \
+diagnostics/%-topics/data.xml
+	./make-indexes.sh $@ $(^D)
 
 serve:
-	python3 -m http.server 5555 -d . --bind 127.0.0.1
+	python3 -m http.server $(PORT) -d . --bind $(HOST)
 
 archive: $(MS)/info.tar
 
 unarchive: $(MS)/info.tar
 	tar -C $(SCRATCH) -xvf $<
 
-clean:
+clean: confirm
 	rm -rf \
-	wordcounts.csv \
-	*-topics.html \
 	*-topics \
+	*-topics.html \
+	diagnostics/*-topics \
+	index.html \
+	info \
+	models \
+	txt/dumped \
 	topdocs \
-	diagnostics/*-topics
+	topics \
+	txt.sequence \
+	viz \
+	wordcounts.csv
 
 confirm:
 	@/bin/echo -n "Are you sure? [y/N] " && read ans && [ $${ans:-N} = y ]
 
 superclean: confirm clean
-	rm -rf txt txt.sequence mallet venv
-
-superduperclean: superclean
-	rm -rf models viz
+	rm -rf txt mallet venv
 
 .PHONY: \
-serve \
 archive \
-unarchive \
 clean \
+confirm \
+serve \
 superclean \
-superduperclean \
-confirm
+unarchive
 
-# expensive-to-generate files
+# don't delete these intermediate files
 .PRECIOUS: \
-txt.sequence \
-models/%-topics.gz \
-$(SCRATCH)/info/instances.txt \
-$(SCRATCH)/info/features.txt \
-$(SCRATCH)/info/feature-counts.tsv \
-$(SCRATCH)/info/%-topics/topic-word-weights.tsv \
-$(SCRATCH)/info/%-topics/doc-topics.tsv \
-$(SCRATCH)/info/%-topics/doc-topics.json \
-$(SCRATCH)/info/%-topics/topic-docs.txt \
 $(SCRATCH)/info/%-topics/diagnostics.xml \
+$(SCRATCH)/info/%-topics/doc-topics.json \
+$(SCRATCH)/info/%-topics/doc-topics.tsv \
+$(SCRATCH)/info/%-topics/topic-docs.txt \
+$(SCRATCH)/info/%-topics/topic-word-weights.tsv \
+$(SCRATCH)/info/%-topics/topic-words.json \
+$(SCRATCH)/info/feature-counts.tsv \
+$(SCRATCH)/info/features.txt \
+$(SCRATCH)/info/instances.txt \
+models/%-topics.gz \
+txt.sequence \
+index.html \
 %-topics.html \
-viz/%-topics/index.html \
 topdocs/%-topics/index.html \
-diagnostics/%-topics/index.html
+viz/%-topics/index.html \
+diagnostics/%-topics/data.xml
