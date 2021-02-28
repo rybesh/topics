@@ -4,11 +4,13 @@ topics
 *-topics.html
 index.html
 diagnostics/*-topics/
+exclude.txt
 info/
 mallet/
 models/
 pdf/
 topdocs/
+txt.dumped
 txt.sequence
 txt/
 venv/

@@ -33,15 +33,18 @@ X := $(foreach tool,$(TOOLS),\
 n_topics = $(word 1,$(subst -, ,$1))
 optimize = $(word 2,$(subst -, ,$1))
 
+# create an empty exclude file if none exists
+exclude.txt:
+	touch $@
+
 # dump plaintext from pdfs
-txt/dumped:
+txt.dumped: exclude.txt
 	mkdir -p txt
-	find -L pdf \
-	-name "*.pdf" \
-	-not -path "**/Exclude from topic model/*" \
-	-print0 \
+	find -L pdf -name "*.pdf" \
+	| grep -iv -f exclude.txt \
+	| tr \\n \\0 \
 	| xargs -0 -n1 ./dumptext.sh
-	touch txt/dumped
+	touch txt.dumped
 
 # count words in each file
 wordcounts.csv:
@@ -59,7 +62,7 @@ $(MALLET):
 	sed -i -e 's/MEMORY=1g/MEMORY=$(MEMORY)/g' $@
 
 # turn text data into a MALLET feature sequence
-txt.sequence: txt/dumped | $(MALLET)
+txt.sequence: txt.dumped | $(MALLET)
 	$(MALLET) import-dir \
 	--input txt \
 	--keep-sequence \
@@ -195,7 +198,7 @@ clean: confirm
 	index.html \
 	info \
 	models \
-	txt/dumped \
+	txt.dumped \
 	topdocs \
 	topics \
 	txt.sequence \
