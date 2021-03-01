@@ -22,6 +22,7 @@ def header(title='top documents per topic'):
       padding-left: 1em;
     }}
     .pt {{ padding-top: 1em }}
+    .pw {{ padding: 0 0.25em }}
     .mb {{ margin-bottom: 1em }}
     .nav {{
       display: flex;
@@ -153,7 +154,8 @@ with open(sys.argv[2]) as f:
                 continue
             page.write(
                 '<span class="link">'
-                f'<a href="{t}.html" style="background-color: {red(p)}">{t}</a>'
+                f'<a href="{t}.html" class="pw"'
+                f' style="background-color: {red(p)}">{t}</a>'
                 '</span>'
             )
         page.write('</div>')
