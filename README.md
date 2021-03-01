@@ -37,7 +37,7 @@ brew install make poppler git ant python3
 
 ## Make a local copy of this repository
 
-Either [clone this repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository), or [download the ZIP file](https://github.com/rybesh/aeshin/topics/main.zip) of
+Either [clone this repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository), or [download the ZIP file](https://github.com/rybesh/topics/archive/main.zip) of
 this repository and unzip it someplace. Either way you should end up
 with a directory called `topics` on your computer.
 
