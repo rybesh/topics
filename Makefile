@@ -40,7 +40,7 @@ exclude.txt:
 # dump plaintext from pdfs
 txt.dumped: exclude.txt
 	mkdir -p txt
-	find -L pdf -name "*.pdf" \
+	find -L pdf -iname "*.pdf" \
 	| grep -iv -f exclude.txt \
 	| tr \\n \\0 \
 	| xargs -0 -n1 ./dumptext.sh
