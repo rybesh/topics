@@ -145,7 +145,7 @@ with open(sys.argv[2]) as f:
             f'{proportion:.3f}'
             '</span>'
             f'<span class="link">'
-            f'<a href="{href}">{anchor.replace("/", " / ")}</a>'
+            f'<a target="_blank" href="{href}">{anchor.replace("/", " / ")}</a>'
             '</span>'
         )
         for p, t in doc_topics.get(filename, []):
