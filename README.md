@@ -133,7 +133,7 @@ MEMORY=8g make 50-topics
 Note that the less RAM MALLET uses, the more time topic modeling will
 take (and the more it uses, the less time it will take).
 
-## Browse the topic models
+## Browse your topic models
 
 Run a local web server for browsing the topic models with the command:
 
@@ -186,3 +186,61 @@ For an explanation of the topic structure visualization, see the
 For an explanation of the diagnostics tool, see the [MALLET
 documentation](http://mallet.cs.umass.edu/diagnostics.php).
 
+## Rebuild your topic models
+
+If you add new PDFs to your PDF directories, you'll need to rebuild
+your topic models. To do this use the command:
+
+```
+make clean 50-topics
+```
+
+Again, `50` can be replaced with however many topics you want. Be sure
+to rebuild all the existing models if you want them to incorporate the
+new PDFs.
+
+This command will only convert the new PDFs to plain text, skipping any
+PDFs that have already been converted. If you want to start completely
+from scratch, including re-converting all your PDFs and re-installing
+MALLET and pyLDAvis, use the command:
+
+```
+make superclean 50-topics
+```
+
+Note that **you will not get the same set of topics** when you rebuild
+your models! This is expected: topic modeling involves random
+sampling, which produces different (but comparable) results each time.
+
+For exploring a library of PDFs, this is a feature, not a bug: you can rebuild your topic models several times, looking to see what kinds of interesting clusters are turned up.
+
+However, if you need reproducibility, you can edit the Makefile to
+[add the `--random-seed` option to the MALLET `train-topics`
+command](https://stackoverflow.com/questions/18050891/bin-mallet-train-topics-getting-different-results-at-every-instance) (below where it says `# train topic model`).
+
+## Troubleshooting
+
+Some PDFs, such as scanned PDFs that have not had OCR run on them, may
+not have any readable text in them, meaning that the plain text
+versions of these files will be empty. You can check if this is the
+case for any of your PDF files by running this command:
+
+```
+make wordcounts.csv
+```
+
+This will generate a [CSV](https://simple.wikipedia.org/wiki/Comma-separated_values) file listing the word count for each
+plain text file created from your PDFs. Open the CSV in the
+spreadsheet software of your choice and sort by word count. Files with
+zero or very few words should be checked to see if the PDF needs to
+have OCR run on it.
+
+You may find that one or more of your topics seems to consist of
+gibberish. This is usually a sign that OCR has failed, producing a
+bunch of unreadable symbols instead of readable text. This is often
+due to a problem with embedded fonts in the PDF file. Using Adobe
+Acrobat Pro DC to [convert fonts to outlines](https://www.copperbottomdesign.com/blog/converting-fonts-to-outlines) before running OCR
+can fix this.
+
+You can use the diagnostics tool to find other kinds of “problematic”
+topics—see the [MALLET documentation](http://mallet.cs.umass.edu/diagnostics.php).
