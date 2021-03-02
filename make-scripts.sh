@@ -2,7 +2,7 @@
 
 cat > "$1" <<EOF
 #! /bin/sh
-./topics.py info/$1/doc-topics.json "\$1"
+./topics.py info/$1/doc-topics.json "\$1" $2 $3
 EOF
 
 # shellcheck disable=2012

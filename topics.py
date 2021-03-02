@@ -5,39 +5,21 @@ import json
 import re
 import subprocess
 from urllib.parse import quote
-
-HOST = '127.0.0.1:5555'
-
-
-# deal with quirks in mallet's url encoding
-def _quote(s):
-    return (
-        quote(s)
-        .replace('%2B', '+')
-        .replace('%2C', ',')
-    )
-
+from utils import pdf_path_to_doc_name, doc_name_to_fragment_id
 
 with open(sys.argv[1]) as f:
     doc_topics = json.load(f)
 
-anchor = (
-    sys.argv[2]
-    .removeprefix('pdf/')
-    .removesuffix('.pdf')
-)
-
-filename = (
-    anchor
-    .replace('/', '__')
-    .replace(' ', '_')
-)
-
 model = re.match(r'.*\/(\d+-topics)\/.*', sys.argv[1])[1]
+pdf_path = sys.argv[2]
+host = sys.argv[3]
+port = sys.argv[4]
 
-for p, t in doc_topics[
-        (f'file:/Users/ryanshaw/Code/topics/txt/{_quote(filename)}.txt')
-]:
-    subprocess.run(
-        ['open', f'http://{HOST}/topdocs/{model}/{t}.html#{quote(anchor)}']
-    )
+doc_name = pdf_path_to_doc_name(pdf_path)
+fragment = quote(doc_name_to_fragment_id(doc_name))
+
+for p, t in doc_topics[doc_name]:
+    subprocess.run([
+        'open',
+        f'http://{host}:{port}/topdocs/{model}/{t}.html#{fragment}'
+    ])

@@ -1,9 +1,11 @@
 #! /usr/bin/env python3
 
-import sys
-import os
+import csv
 import json
-from urllib.parse import unquote
+import os
+import sys
+from urllib.parse import quote
+from utils import doc_name_to_fragment_id, doc_name_to_txt_path, strip_fixes
 
 n_topics = int(sys.argv[1])
 
@@ -55,14 +57,13 @@ def header(title='top documents per topic'):
     '''
 
 
-def link(f):
-    path = unquote(
-        f.split('/')[-1]
-        .replace('__', '/')
-        .replace('_', ' ')
-        .removesuffix('.txt')
-    )
-    return f'/pdf/{path}.pdf', path
+def link(doc_name, txt_pdf):
+    fragment = doc_name_to_fragment_id(doc_name)
+    txt_path = doc_name_to_txt_path(doc_name)
+    pdf_path = txt_pdf[txt_path]
+    href = f'/{quote(pdf_path)}'
+    anchor_text = strip_fixes(pdf_path, 'pdf/', '.pdf').replace('/', ' / ')
+    return fragment, href, anchor_text
 
 
 def red(scale):
@@ -89,14 +90,19 @@ with open(sys.argv[3]) as f:
 with open(sys.argv[4]) as f:
     topic_words = json.load(f)
 
+with open(sys.argv[5]) as f:
+    txt_pdf = {}
+    for row in csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE):
+        txt_pdf[row[0]] = row[1]
+
 with open(sys.argv[2]) as f:
     next(f)
     last_topic_num = 0
     n_docs = 0
     page = None
     for line in f:
-        topic, doc, filename, proportion = line.split()[0:4]
-        topic_num = int(topic) + 1
+        topic_id, doc_id, doc_name, proportion = line.split()[0:4]
+        topic_num = int(topic_id) + 1
         proportion = float(proportion)
         if topic_num == last_topic_num:
             n_docs += 1
@@ -139,17 +145,17 @@ with open(sys.argv[2]) as f:
             n_docs = 1
         if n_docs > DOCS:
             continue
-        href, anchor = link(filename)
+        fragment, href, anchor_text = link(doc_name, txt_pdf)
         page.write(
-            f'<div id="{anchor}">'
+            f'<div id="{fragment}">'
             f'<span style="background-color: {red(proportion)}">'
             f'{proportion:.3f}'
             '</span>'
             f'<span class="link">'
-            f'<a target="_blank" href="{href}">{anchor.replace("/", " / ")}</a>'
+            f'<a target="_blank" href="{href}">{anchor_text}</a>'
             '</span>'
         )
-        for p, t in doc_topics.get(filename, []):
+        for p, t in doc_topics.get(doc_name, []):
             if t == topic_num:
                 continue
             page.write(
