@@ -1,5 +1,7 @@
 import os
 import re
+import csv
+import unicodedata
 from urllib.parse import unquote
 
 ENCODINGS = (
@@ -17,6 +19,7 @@ ENCODINGS = (
     ('{', '%7B'),
     ('|', '%7C'),
     ('}', '%7D'),
+    (' ', '%C2%A0'),
 )
 
 
@@ -57,7 +60,9 @@ def doc_name_to_fragment_id(doc_name):
 # convert a relative pdf file path to a mallet document name
 def pdf_path_to_doc_name(pdf_path):
     txt_path = pdf_path_to_txt_path(pdf_path)
-    return 'file:' + escape(f'{os.getcwd()}/{txt_path}')
+    return 'file:' + unicodedata.normalize('NFC', escape(
+        f'{os.getcwd()}/{txt_path}'
+    ))
 
 
 # convert a relative pdf path to a relative txt path
@@ -65,3 +70,13 @@ def pdf_path_to_txt_path(pdf_path):
     path = strip_fixes(pdf_path, 'pdf/', '.pdf')
     path_no_spaces = path.replace(' ', '_')
     return f'txt/{path_no_spaces}.txt'
+
+
+# load relative txt path to relative pdf path mappings
+def load_txt_path_to_pdf_path_mappings(mappings_filename):
+    txt_pdf = {}
+    with open(mappings_filename) as f:
+        for row in csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE):
+            txt_pdf[unicodedata.normalize('NFC', row[0])] = row[1]
+    return txt_pdf
+

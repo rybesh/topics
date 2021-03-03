@@ -1,13 +1,18 @@
 #! /usr/bin/env python3
 
-import csv
 import json
 import os
 import sys
 from urllib.parse import quote
-from utils import doc_name_to_fragment_id, doc_name_to_txt_path, strip_fixes
 
 n_topics = int(sys.argv[1])
+from utils import (
+    doc_name_to_fragment_id,
+    doc_name_to_txt_path,
+    load_txt_path_to_pdf_path_mappings,
+    strip_fixes
+)
+
 
 DOCS = int(5000 / n_topics)
 
@@ -90,10 +95,7 @@ with open(sys.argv[3]) as f:
 with open(sys.argv[4]) as f:
     topic_words = json.load(f)
 
-with open(sys.argv[5]) as f:
-    txt_pdf = {}
-    for row in csv.reader(f, delimiter='\t', quoting=csv.QUOTE_NONE):
-        txt_pdf[row[0]] = row[1]
+txt_pdf = load_txt_path_to_pdf_path_mappings(sys.argv[5])
 
 with open(sys.argv[2]) as f:
     next(f)
