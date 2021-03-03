@@ -2,9 +2,10 @@
 
 import sys
 import json
+from utils import get_n_topics
 from collections import defaultdict
 
-n_topics = int(sys.argv[1])
+n_topics = get_n_topics(sys.argv[1])
 
 DOCS = int(5000 / n_topics)
 

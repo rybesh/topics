@@ -4,15 +4,15 @@ import json
 import os
 import sys
 from urllib.parse import quote
-
-n_topics = int(sys.argv[1])
 from utils import (
     doc_name_to_fragment_id,
     doc_name_to_txt_path,
+    get_n_topics,
     load_txt_path_to_pdf_path_mappings,
     strip_fixes
 )
 
+n_topics = get_n_topics(sys.argv[1])
 
 DOCS = int(5000 / n_topics)
 

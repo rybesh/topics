@@ -80,3 +80,12 @@ def load_txt_path_to_pdf_path_mappings(mappings_filename):
             txt_pdf[unicodedata.normalize('NFC', row[0])] = row[1]
     return txt_pdf
 
+
+# parse model name from string
+def get_model_name(s):
+    return re.match(r'^.*(\d+(?:-optimized)?-topics).*$', s)[1]
+
+
+# parse number of topics from model name stem
+def get_n_topics(model_name_stem):
+    return int(re.match(r'^(\d+)(?:-optimized)?$', model_name_stem)[1])
