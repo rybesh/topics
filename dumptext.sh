@@ -15,9 +15,12 @@ TXTPATH=${TXTPATH// /_}
 # add txt prefix and suffix
 TXTPATH="txt/${TXTPATH}.txt"
 
+# dump the pdf only if needed
 if [ ! -f "$TXTPATH" ]; then
     echo "Dumping $PDFPATH" > /dev/stderr
     mkdir -p "$(dirname "$TXTPATH")"
     pdftotext -q "$PDFPATH" "$TXTPATH"
-    printf "%s\t%s\n" "$TXTPATH" "$PDFPATH"
 fi
+
+# write txt path to pdf path mapping to stdout
+printf "%s\t%s\n" "$TXTPATH" "$PDFPATH"

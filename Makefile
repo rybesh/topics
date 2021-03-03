@@ -67,7 +67,7 @@ $(SCRATCH)/info/txt-pdf.tsv: exclude.txt
 	| grep -iv -f exclude.txt \
 	| tr \\n \\0 \
 	| xargs -0 -n1 ./dumptext.sh \
-	>> $@
+	> $@
 
 $(SCRATCH)/info/instances.txt: txt.sequence
 	mkdir -p $(@D)
