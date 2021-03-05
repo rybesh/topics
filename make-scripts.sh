@@ -5,11 +5,12 @@ cat > "$1" <<EOF
 ./topics.py info/$1/doc-topics.json "\$1" $2 $3
 EOF
 
-# shellcheck disable=2012
 cat > topics <<EOF
+#! /bin/sh
+# shellcheck disable=2012
 for script in \$(ls -- *-topics | sort -n)
 do
-        ./\$script "\$1"
+        "./\$script" "\$1"
 done
 EOF
 
