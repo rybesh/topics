@@ -83,7 +83,7 @@ def load_txt_path_to_pdf_path_mappings(mappings_filename):
 
 # parse model name from string
 def get_model_name(s):
-    return re.match(r'^.*(\d+(?:-optimized)?-topics).*$', s)[1]
+    return re.match(r'^.*?(\d+(?:-optimized)?-topics).*$', s)[1]
 
 
 # parse number of topics from model name stem
