@@ -1,7 +1,7 @@
 # Topic model a library of PDFs
 
-This is a Unix-style workflow for [topic modeling](https://www.youtube.com/watch?v=gN2x_KjJI1o) a personal library
-of PDFs. It should work on macOS and Linux.
+This is a Unix-style workflow for [topic modeling](https://www.youtube.com/watch?v=gN2x_KjJI1o) a personal
+library of PDFs using [MALLET](http://mallet.cs.umass.edu). It should work on macOS and Linux.
 
 If you find something in these instructions unclear, or something
 doesn't work for you, or you have a suggestion for improving this
@@ -15,15 +15,22 @@ terminal or Linux shell.
 Depending on how many PDFs you have, you may need a computer that has
 a good amount of RAM and a CPU with multiple cores. On my 2019 laptop
 with a 8 core Intel CPU and 16GB of RAM, building and visualizing a
-50-topic model of ~5000 PDFs takes about 15 minutes. Building and
-visualizing a 200-topic model takes about an hour. If you have more
-PDFs than that, or don't have that many cores or that much RAM, you
-might want to run this on an on-demand cloud compute server—but doing
-that is beyond the scope of these instructions.
+50-topic model of around 5,000 PDFs, having a total of about 20
+million words, takes about 15 minutes. Building and visualizing a
+200-topic model takes about an hour.
+
+If you have more PDFs than that, or don't have that many cores or that
+much RAM, you might want to run this on an on-demand cloud compute
+server—but doing that is beyond the scope of these instructions.
 
 Wherever you run this, you will need recent versions of the following
 software: [GNU make](https://www.gnu.org/software/make/) (version 4.3 or later) [pdftotext](https://en.wikipedia.org/wiki/Pdftotext),
-[git](https://git-scm.com), [ant](https://ant.apache.org), and [Python](https://www.python.org) (version 3.6 or later).
+[git](https://git-scm.com), [ant](https://ant.apache.org), and [Python](https://www.python.org) (version 3.9 or later).
+
+(It may work with an earlier version of Python 3, but I haven't tested
+this. If you want to try it with an earlier version, set the value of
+`NEED_PYTHON_VERSION` in the [Makefile](https://github.com/rybesh/topics/blob/main/Makefile#L8) to that version, and then
+please let me know if it works by [filing an issue](https://github.com/rybesh/topics/issues).)
 
 On macOS, all of these can be installed using [Homebrew](https://brew.sh). After
 installing Homebrew, execute the following command in the terminal to
@@ -91,14 +98,7 @@ Assuming you’re still visiting the `topics` directory in your terminal
 or shell, you can build a topic model with 50 topics with the command:
 
 ```
-make 50-topics
-```
-
-If you're using macOS and you installed GNU make using Homebrew, make
-is installed as `gmake`, so you'll need to instead use:
-
-```
-gmake 50-topics
+./build 50-topics
 ```
 
 This will
@@ -113,21 +113,30 @@ This will
 topics use the command:
 
 ```
-make 111-topics
+./build 111-topics
+```
+
+“Hyperparameter optimization” is a MALLET option that allows some
+topics to be more prominent than others, which can sometimes result in
+better models. To build an optimized model, put the word `-optimized`
+after the number of topics you want:
+
+```
+./build 50-optimized-topics
 ```
 
 You can build multiple topic models with one command (each will be
 built sequentially):
 
 ```
-make 50-topics 100-topics
+./build 50-topics 50-optimized-topics 100-topics 100-optimized-topics
 ```
 
 By default MALLET will use 12G of RAM; if you don't have that much (or
 you have more) you can specify how much RAM to use:
 
 ```
-MEMORY=8g make 50-topics
+MEMORY=8g ./build 50-topics
 ```
 
 Note that the less RAM MALLET uses, the more time topic modeling will
@@ -141,7 +150,7 @@ Run a local web server for browsing the topic models with the command:
 make serve
 ```
 
-This will run a server on http://localost:5555, which you can visit
+This will run a server on http://localhost:5555, which you can visit
 with a web browser. If something else is already running on port 5555,
 you can change the port:
 
@@ -163,21 +172,24 @@ browser. For documents that are in the list of top documents for more
 than one topic, links to the other topics appear after the link to the
 document.
 
-On macOS, you can find a specific document in the models you've built
-by using the `topics` shell script in the `topics` directory. Give it
-the path to a PDF, and it will open every top documents list in which
-that document appears:
+You can find a specific document in the models you've built by using
+the `topics` shell script in the `topics` directory. Give it the path
+to a PDF, and it will print the URL of and (if it can) open in a
+browser every top documents list in which that document appears:
 
 ```
 ./topics pdf/Desktop/TO-READ/an-interesting-article.pdf
 ```
 
-This command will work on Linux too, but first you need to install
-[xdg-open](https://linux.die.net/man/1/xdg-open) (it may already be installed) and add the following to
-your `~/.aliases`:
+Note that if you change the port on which the local web server runs
+from the default of `5555`, you'll need to rebuild the shell scripts
+for finding specific documents. Assuming you've built topic models
+with 50, 100, and 200 topics, you can delete and rebuild the shell
+scripts as follows:
 
 ```
-alias open='xdg-open'
+rm -f topics 50-topics 100-topics 200-topics
+./build 50-topics 100-topics 200-topics
 ```
 
 For an explanation of the topic structure visualization, see the
@@ -192,7 +204,7 @@ If you add new PDFs to your PDF directories, you'll need to rebuild
 your topic models. To do this use the command:
 
 ```
-make clean 50-topics
+./rebuild 50-topics
 ```
 
 Again, `50` can be replaced with however many topics you want. Be sure
@@ -212,11 +224,21 @@ Note that **you will not get the same set of topics** when you rebuild
 your models! This is expected: topic modeling involves random
 sampling, which produces different (but comparable) results each time.
 
-For exploring a library of PDFs, this is a feature, not a bug: you can rebuild your topic models several times, looking to see what kinds of interesting clusters are turned up.
+For exploring a library of PDFs, this is a feature, not a bug: you can
+rebuild your topic models several times, looking to see what kinds of
+interesting clusters are turned up.
 
-However, if you need reproducibility, you can edit the Makefile to
-[add the `--random-seed` option to the MALLET `train-topics`
-command](https://stackoverflow.com/questions/18050891/bin-mallet-train-topics-getting-different-results-at-every-instance) (below where it says `# train topic model`).
+However, if you need reproducibility, when you build your topic models
+you can specify a [random seed](https://en.wikipedia.org/wiki/Random_seed) for MALLET to use as follows:
+
+```
+RANDOM_SEED=7 ./build 50-topics
+```
+
+The value of `RANDOM_SEED` can be any positive integer (not zero). 
+
+If you use the same `RANDOM_SEED` value every time you build the
+models, you should get the same results each time.
 
 ## Troubleshooting
 
