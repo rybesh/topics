@@ -1,0 +1,25 @@
+#! /bin/sh
+
+runmake()
+{
+    if type gmake > /dev/null
+    then  gmake "$@"
+    else  make "$@"
+    fi
+}
+
+for target in "$@"
+do
+    if [ "$target" = "clean" ]
+    then
+        continue
+    fi
+    if ! printf '%s' "$target" | grep -qE '^\d+(-optimized)?-topics$'
+    then
+        echo "error: $target"
+        echo "  use: $0 n-topics OR $0 n-optimized-topics"
+        exit 1
+    fi
+done
+
+time runmake "$@"
