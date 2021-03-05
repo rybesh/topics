@@ -12,7 +12,9 @@ from utils import (
     strip_fixes
 )
 
-n_topics = get_n_topics(sys.argv[1])
+model_stem = sys.argv[1]
+
+n_topics = get_n_topics(model_stem)
 
 DOCS = int(5000 / n_topics)
 
@@ -76,9 +78,9 @@ def red(scale):
     return f'rgb(255,{255 - scale},{255 - scale})'
 
 
-os.makedirs(f'topdocs/{n_topics}-topics', exist_ok=True)
+os.makedirs(f'topdocs/{model_stem}-topics', exist_ok=True)
 
-with open(f'topdocs/{n_topics}-topics/index.html', 'w') as index:
+with open(f'topdocs/{model_stem}-topics/index.html', 'w') as index:
     index.write(header())
     index.write('topics:<div style="max-width: 600px">')
     for topic_num in range(1, n_topics + 1):
@@ -112,7 +114,7 @@ with open(sys.argv[2]) as f:
             if page is not None:
                 page.write('<div class="spacer"></div>')
                 page.close()
-            page = open(f'topdocs/{n_topics}-topics/{topic_num}.html', 'w')
+            page = open(f'topdocs/{model_stem}-topics/{topic_num}.html', 'w')
             page.write(header(f'topic {topic_num}'))
             page.write('<div class="nav mb">')
             if topic_num > 1:
