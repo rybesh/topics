@@ -24,23 +24,34 @@ much RAM, you might want to run this on an on-demand cloud compute
 server—but doing that is beyond the scope of these instructions.
 
 Wherever you run this, you will need recent versions of the following
-software: [GNU make](https://www.gnu.org/software/make/) (version 4.3 or later) [pdftotext](https://en.wikipedia.org/wiki/Pdftotext),
-[git](https://git-scm.com), [ant](https://ant.apache.org), and [Python](https://www.python.org) (version 3.9 or later).
+software: [GNU make](https://www.gnu.org/software/make/) (version 4.3 or later), [Python](https://www.python.org) (version
+3.8 or later), [pdftotext](https://en.wikipedia.org/wiki/Pdftotext), [git](https://git-scm.com), and [ant](https://ant.apache.org).
 
-(It may work with an earlier version of Python 3, but I haven't tested
-this. If you want to try it with an earlier version, set the value of
-`NEED_PYTHON_VERSION` in the [Makefile](https://github.com/rybesh/topics/blob/main/Makefile#L8) to that version, and then
-please let me know if it works by [filing an issue](https://github.com/rybesh/topics/issues).)
+(It probably will work with an earlier version of Python 3, but I
+haven't tested this. If you want to try it with an earlier version,
+set the value of `NEED_PYTHON_VERSION` in the [Makefile](https://github.com/rybesh/topics/blob/main/Makefile#L8) to that
+version, and then please let me know if it works by [filing an
+issue](https://github.com/rybesh/topics/issues).)
 
 On macOS, all of these can be installed using [Homebrew](https://brew.sh). After
 installing Homebrew, execute the following command in the terminal to
 install all the prerequisites:
 
 ```
-brew install make poppler git ant python3
+brew install make python3 poppler git ant
 ```
 
 (`poppler` is the name of the package that installs `pdftotext`.)
+
+On Ubuntu Linux 20.10 (Groovy Gorilla) or later, these prerequisites
+can be installed using `apt-get`:
+
+```
+sudo apt-get install make python3 python3-venv poppler-utils git ant
+```
+
+Note that on Ubuntu you must install `python3-venv` in addition to
+`python3`.
 
 ## Make a local copy of this repository
 
