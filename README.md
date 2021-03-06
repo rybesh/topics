@@ -216,17 +216,29 @@ If you add new PDFs to your PDF directories, you'll need to rebuild
 your topic models. To do this use the command:
 
 ```
-./rebuild 50-topics
+./rebuild 50-optimized-topics
 ```
 
-Again, `50` can be replaced with however many topics you want. Be sure
-to rebuild all the existing models if you want them to incorporate the
-new PDFs.
+**This will delete all existing models** and then build an optimized
+50-topic model.
 
-This command will only convert the new PDFs to plain text, skipping any
-PDFs that have already been converted. If you want to start completely
-from scratch, including re-converting all your PDFs and re-installing
-MALLET and pyLDAvis, use the command:
+If you only want to rebuild a specific model, without deleting all
+existing models, you can delete just that model and then build it:
+
+```
+./delete 50-topics
+./build 50-topics
+```
+
+Note that if you've added new PDFs, only the models that are rebuilt
+will incorporate them, so most of the time you're going to want to use
+`rebuild` to rebuild all of your models.
+
+These commands (`rebuild` or `delete` followed by `build`) will only
+convert the new PDFs to plain text, skipping any PDFs that have
+already been converted. If you want to start completely from scratch,
+including re-converting all your PDFs and re-installing MALLET and
+pyLDAvis, use the command:
 
 ```
 make superclean 50-topics
