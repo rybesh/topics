@@ -156,7 +156,7 @@ $(PYTHON):
 	python3 -m venv venv
 	$(PIP) install --upgrade pip
 	$(PIP) install wheel
-	$(PIP) install scikit-learn pyldavis
+	$(PIP) install -r requirements.txt
 
 # generate topics visualization
 viz/%-topics/index.html: \
