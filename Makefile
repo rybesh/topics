@@ -1,11 +1,11 @@
-TOOLS := git ant pdftotext
+TOOLS := pdftotext git ant
 MALLET := ./mallet/bin/mallet
 PYTHON := ./venv/bin/python
 PIP := ./venv/bin/pip
 
 # minimum versions required
 NEED_MAKE_VERSION := 4.3
-NEED_PYTHON_VERSION := 3.9
+NEED_PYTHON_VERSION := 3.8
 
 # where local web server should listen
 HOST ?= 127.0.0.1
