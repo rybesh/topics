@@ -17,7 +17,8 @@ a good amount of RAM and a CPU with multiple cores. On my 2019 laptop
 with a 8 core Intel CPU and 16GB of RAM, building and visualizing a
 50-topic model of around 5,000 PDFs, having a total of about 20
 million words, takes about 15 minutes. Building and visualizing a
-200-topic model takes about an hour.
+200-topic model takes about an hour. (Most of that time is spent
+generating the visualization, not building the topic model.)
 
 If you have more PDFs than that, or don't have that many cores or that
 much RAM, you might want to run this on an on-demand cloud compute
