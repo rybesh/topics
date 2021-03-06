@@ -13,7 +13,7 @@ PORT ?= 5555
 
 # machine specs, set in env
 MEMORY ?= 12g
-CPUS ?= $(shell sysctl hw.ncpu | cut -d ' ' -f 2)
+CPUS ?= $(if $(shell which nproc),$(shell nproc),$(shell sysctl hw.ncpu | cut -d ' ' -f 2))
 
 # hyperparameter optimization settings
 OPTIMIZATION := --optimize-interval 20 --optimize-burn-in 50 # keep this space
