@@ -1,5 +1,6 @@
 #! /bin/sh
 
-find -d . \
+find . \
+     -depth \
      \( -name "$1" -o -name "$1.html" -o -name "$1.gz" \) \
      -exec rm -rf {} \;
