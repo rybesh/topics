@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 prettify () {
     PRETTY="${1%.html}"

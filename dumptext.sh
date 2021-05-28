@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
 PDFPATH="$1"
 TXTPATH="$1"
