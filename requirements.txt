@@ -1,2 +1,2 @@
-pyLDAvis==3.4.0
+pyLDAvis==3.4.1
 scikit-learn==1.2.1
